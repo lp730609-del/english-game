@@ -264,43 +264,54 @@ function syncProfilesFromCloud() {
   fetch(GAS_API_URL)
     .then(res => res.json())
     .then(cloudProfiles => {
-      if (cloudProfiles && Object.keys(cloudProfiles).length > 0) {
-        const localProfiles = getProfilesFromStorage();
-        const mergedProfiles = { ...localProfiles };
+      const localProfiles = getProfilesFromStorage();
+      const mergedProfiles = { ...localProfiles };
+      const cProfiles = cloudProfiles || {};
+      
+      // 1. 將雲端有、本地沒有或進度較新的合併到本地
+      Object.keys(cProfiles).forEach(name => {
+        const cloudU = cProfiles[name];
+        const localU = localProfiles[name];
         
-        Object.keys(cloudProfiles).forEach(name => {
-          const cloudU = cloudProfiles[name];
-          const localU = localProfiles[name];
-          
-          if (!localU) {
-            mergedProfiles[name] = cloudU;
-          } else {
-            // 合併進度，以完成單元數較多為準
-            const cloudCompleted = cloudU.completedUnits ? cloudU.completedUnits.length : 0;
-            const localCompleted = localU.completedUnits ? localU.completedUnits.length : 0;
-            if (cloudCompleted >= localCompleted) {
-              mergedProfiles[name] = cloudU;
-            }
-          }
-        });
-        
-        localStorage.setItem('spelling_hero_profiles', JSON.stringify(mergedProfiles));
-        
-        if (currentUser && mergedProfiles[currentUser.name]) {
-          currentUser = mergedProfiles[currentUser.name];
-          updateHeaderUI();
-        }
-        
-        // 重新渲染畫面
-        const loginScreen = document.getElementById('login-screen');
-        if (loginScreen.classList.contains('active')) {
-          loadProfilesToUI();
+        if (!localU) {
+          mergedProfiles[name] = cloudU;
         } else {
-          renderUnitsGrid();
+          // 合併進度，以完成單元數較多為準
+          const cloudCompleted = cloudU.completedUnits ? cloudU.completedUnits.length : 0;
+          const localCompleted = localU.completedUnits ? localU.completedUnits.length : 0;
+          if (cloudCompleted >= localCompleted) {
+            mergedProfiles[name] = cloudU;
+          }
         }
+      });
+      
+      // 2. 將本地有、但雲端沒有的「舊角色」（如接上 API 前建立的角色）自動推上雲端
+      Object.keys(localProfiles).forEach(name => {
+        if (!cProfiles[name]) {
+          saveUserToCloud(localProfiles[name]);
+        }
+      });
+      
+      localStorage.setItem('spelling_hero_profiles', JSON.stringify(mergedProfiles));
+      
+      if (currentUser && mergedProfiles[currentUser.name]) {
+        currentUser = mergedProfiles[currentUser.name];
+        updateHeaderUI();
+      }
+      
+      // 重新渲染畫面
+      const loginScreen = document.getElementById('login-screen');
+      if (loginScreen.classList.contains('active')) {
+        loadProfilesToUI();
+      } else {
+        renderUnitsGrid();
       }
     })
-    .catch(err => console.warn("Cloud read failed:", err));
+    .catch(err => {
+      console.warn("Cloud read failed, fallback to local:", err);
+      // 即使讀取失敗，也確保本地 UI 正常渲染
+      loadProfilesToUI();
+    });
 }
 
 // 監聽網頁關閉/重新整理，安全保存時間
