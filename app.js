@@ -233,6 +233,76 @@ function saveTimeRecord() {
   saveProfilesToStorage(profiles);
 }
 
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbytFWSkoap5P-FsjB1y2CJuuYBjwWBd-LzV7fNxJLxC0rJQjrmbjMRhAVPFS75DRkxF/exec";
+
+function getProfilesFromStorage() {
+  const data = localStorage.getItem('spelling_hero_profiles');
+  return data ? JSON.parse(data) : {};
+}
+
+function saveProfilesToStorage(profiles) {
+  localStorage.setItem('spelling_hero_profiles', JSON.stringify(profiles));
+  // 異步同步到雲端試算表
+  if (currentUser && profiles[currentUser.name]) {
+    saveUserToCloud(profiles[currentUser.name]);
+  }
+}
+
+function saveUserToCloud(userObj) {
+  if (!userObj) return;
+  fetch(GAS_API_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(userObj)
+  }).catch(err => console.warn("Cloud sync failed:", err));
+}
+
+function syncProfilesFromCloud() {
+  fetch(GAS_API_URL)
+    .then(res => res.json())
+    .then(cloudProfiles => {
+      if (cloudProfiles && Object.keys(cloudProfiles).length > 0) {
+        const localProfiles = getProfilesFromStorage();
+        const mergedProfiles = { ...localProfiles };
+        
+        Object.keys(cloudProfiles).forEach(name => {
+          const cloudU = cloudProfiles[name];
+          const localU = localProfiles[name];
+          
+          if (!localU) {
+            mergedProfiles[name] = cloudU;
+          } else {
+            // 合併進度，以完成單元數較多為準
+            const cloudCompleted = cloudU.completedUnits ? cloudU.completedUnits.length : 0;
+            const localCompleted = localU.completedUnits ? localU.completedUnits.length : 0;
+            if (cloudCompleted >= localCompleted) {
+              mergedProfiles[name] = cloudU;
+            }
+          }
+        });
+        
+        localStorage.setItem('spelling_hero_profiles', JSON.stringify(mergedProfiles));
+        
+        if (currentUser && mergedProfiles[currentUser.name]) {
+          currentUser = mergedProfiles[currentUser.name];
+          updateHeaderUI();
+        }
+        
+        // 重新渲染畫面
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen.classList.contains('active')) {
+          loadProfilesToUI();
+        } else {
+          renderUnitsGrid();
+        }
+      }
+    })
+    .catch(err => console.warn("Cloud read failed:", err));
+}
+
 // 監聽網頁關閉/重新整理，安全保存時間
 window.addEventListener('beforeunload', () => {
   saveTimeRecord();
@@ -1297,6 +1367,7 @@ document.getElementById('btn-create-profile').addEventListener('click', () => {
   };
   
   saveProfilesToStorage(profiles);
+  saveUserToCloud(profiles[name]); // 同步新建角色至雲端
   playSound('snd-levelup');
   
   // 關閉 Modal 並重新載入
@@ -1331,8 +1402,9 @@ function initApp() {
       // 2. 劃分單元
       processWordsData(data);
       
-      // 3. 進入登入畫面
+      // 3. 進入登入畫面，並在背景進行一次雲端同步
       showScreen('login-screen');
+      syncProfilesFromCloud();
     })
     .catch(err => {
       console.error(err);
