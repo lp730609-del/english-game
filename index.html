@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Hero - 英文背單字拼字王</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 粒子特效 Canvas 容器 -->
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="app-container">
+    
+    <!-- 1. 角色登入/選擇畫面 -->
+    <section id="login-screen" class="screen active">
+      <div class="hero-logo">
+        <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h1>Spelling Hero</h1>
+        <p>國小 1200 單字 ∙ 每日拼字大挑戰</p>
+      </div>
+
+      <div class="login-box glass-panel">
+        <h2>請選擇您的角色學習</h2>
+        <div id="profile-list" class="profile-grid">
+          <!-- 角色按鈕會動態載入至此 -->
+        </div>
+
+        <div class="login-actions">
+          <button id="btn-show-add-profile" class="btn btn-secondary">
+            <i class="fa-solid fa-user-plus"></i> 建立新角色
+          </button>
+          <button id="btn-show-parent-dash" class="btn btn-parent">
+            <i class="fa-solid fa-user-shield"></i> 家長監控看板
+          </button>
+        </div>
+      </div>
+
+      <!-- 新增角色對話框 -->
+      <div id="add-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+          <h3>建立新學習角色</h3>
+          <div class="input-group">
+            <label for="new-profile-name">角色名字 / 暱稱</label>
+            <input type="text" id="new-profile-name" placeholder="例如：小明" maxlength="10">
+          </div>
+          <div class="avatar-selector">
+            <label>選擇頭像</label>
+            <div class="avatar-options">
+              <span class="avatar-opt active" data-avatar="owl">🦉</span>
+              <span class="avatar-opt" data-avatar="fox">🦊</span>
+              <span class="avatar-opt" data-avatar="lion">🦁</span>
+              <span class="avatar-opt" data-avatar="panda">🐼</span>
+              <span class="avatar-opt" data-avatar="koala">🐨</span>
+              <span class="avatar-opt" data-avatar="cat">🐱</span>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="btn-cancel-add" class="btn btn-text">取消</button>
+            <button id="btn-create-profile" class="btn btn-primary">確認建立</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 家長監控看板畫面 -->
+    <section id="parent-screen" class="screen">
+      <div class="screen-header">
+        <button class="btn-back btn-go-login"><i class="fa-solid fa-arrow-left"></i> 返回登入</button>
+        <h2><i class="fa-solid fa-user-shield"></i> 家長監控看板</h2>
+      </div>
+
+      <div class="parent-container">
+        <!-- 學生進度摘要卡片 -->
+        <div id="parent-summary-grid" class="parent-grid">
+          <!-- 統計摘要會動態載入於此 -->
+        </div>
+
+        <!-- 詳細學習時間表 -->
+        <div class="parent-table-wrapper glass-panel">
+          <h3><i class="fa-solid fa-calendar-days"></i> 每日學習時間與進度統計</h3>
+          <div class="table-container">
+            <table id="parent-stats-table">
+              <thead>
+                <tr>
+                  <th>學習者</th>
+                  <th>日期</th>
+                  <th>今日使用時間</th>
+                  <th>今日完成單元</th>
+                </tr>
+              </thead>
+              <tbody id="parent-stats-tbody">
+                <!-- 數據動態載入 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 主選單與單元選擇畫面 -->
+    <section id="menu-screen" class="screen">
+      <header class="app-header glass-panel">
+        <div class="user-meta">
+          <span id="header-avatar" class="user-avatar">🦉</span>
+          <div>
+            <div id="header-username" class="user-name">載入中...</div>
+            <div class="user-level">LV <span id="header-level">1</span> <span id="header-xp">0/100</span> XP</div>
+          </div>
+        </div>
+        <div class="header-stats">
+          <div class="stat-badge coin-badge">
+            <i class="fa-solid fa-coins"></i> <span id="header-coins">0</span>
+          </div>
+          <div id="btn-show-wrong-words" class="stat-badge wrong-badge cursor-pointer" title="查看錯題本">
+            <i class="fa-solid fa-book-skull"></i> 錯題本 (<span id="header-wrong-count">0</span>)
+          </div>
+          <button id="btn-logout" class="btn btn-icon" title="登出切換角色">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        <!-- 主題篩選欄 -->
+        <aside class="sidebar glass-panel">
+          <h3>主題篩選</h3>
+          <ul id="theme-filter-list">
+            <li class="active" data-theme="all">全部主題</li>
+            <!-- 主題動態載入 -->
+          </ul>
+        </aside>
+
+        <!-- 單元列表 -->
+        <main class="content-area">
+          <div class="section-title-bar">
+            <h2>學習單元列表</h2>
+            <p>一天建議完成 1-2 個單元，點擊單元開始記憶與挑戰</p>
+          </div>
+          <div id="unit-grid" class="unit-grid">
+            <!-- 單元卡片會動態載入於此 -->
+          </div>
+        </main>
+      </div>
+
+      <!-- 錯題本對話框 -->
+      <div id="wrong-words-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel modal-large">
+          <div class="modal-header">
+            <h3><i class="fa-solid fa-book-skull"></i> 錯題本複習區</h3>
+            <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <p class="modal-desc">這裡記錄了您挑戰時答錯的單字，複習完成後會自動移出錯題本。</p>
+          <div id="wrong-words-list" class="wrong-words-list">
+            <!-- 錯題列表 -->
+          </div>
+          <div class="modal-actions">
+            <button id="btn-start-review" class="btn btn-primary btn-full-width">
+              <i class="fa-solid fa-bolt"></i> 開始錯題魔王挑戰!
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 學習與遊戲挑戰畫面 -->
+    <section id="game-screen" class="screen">
+      <!-- 頂部導覽列 -->
+      <div class="game-header glass-panel">
+        <button id="btn-exit-game" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-chevron-left"></i> 離開單元
+        </button>
+        <div class="game-title-info">
+          <div id="game-unit-title">Unit 1: 人物 (一)</div>
+          <div class="progress-container">
+            <div id="game-progress-bar" class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="game-scores">
+          <span id="game-score-count">0/10</span>
+        </div>
+      </div>
+
+      <!-- 主要活動區 -->
+      <div class="game-body">
+        
+        <!-- A. 階段一：閱讀記憶卡模式 (Learn Mode) -->
+        <div id="panel-learn" class="game-panel active">
+          <div class="panel-desc">
+            <h3>第一步：單字記憶與發音閱讀</h3>
+            <p>請點擊喇叭聆聽發音，熟悉單字的拼寫與中文含意。</p>
+          </div>
+
+          <div class="card-container">
+            <div class="flashcard glass-panel">
+              <div class="card-counter"><span id="learn-card-index">1</span> / <span id="learn-card-total">10</span></div>
+              <div class="card-word-area">
+                <h2 id="learn-english">adult</h2>
+                <div id="learn-phonetic" class="word-phonetic">/əˈdʌlt/</div>
+                <div class="pronounce-row">
+                  <button id="btn-learn-speak" class="btn-speak"><i class="fa-solid fa-volume-high"></i> 播放發音</button>
+                </div>
+              </div>
+              <div class="card-separator"></div>
+              <div class="card-translation-area">
+                <p class="trans-label">中文解釋</p>
+                <h3 id="learn-chinese">成人</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="learn-controls">
+            <button id="btn-learn-prev" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> 上一個</button>
+            <div class="auto-play-toggle">
+              <input type="checkbox" id="chk-auto-speak" checked>
+              <label for="chk-auto-speak">自動播放語音</label>
+            </div>
+            <button id="btn-learn-skip" class="btn btn-secondary hidden"><i class="fa-solid fa-forward"></i> 直接測試</button>
+            <button id="btn-learn-next" class="btn btn-primary">下一個 <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- B. 階段二：遊戲挑戰模式選擇 (Mode Select Panel) -->
+        <div id="panel-mode-select" class="game-panel">
+          <div class="mode-select-header">
+            <i class="fa-solid fa-gamepad logo-large"></i>
+            <h2>解鎖成功！請選擇您的遊戲挑戰模式</h2>
+            <p>完成任何一個模式挑戰即可完成本單元，並獲得金幣與經驗值獎勵！</p>
+          </div>
+
+          <div class="mode-card-grid">
+            <!-- 模式 1：拼字王挑戰 -->
+            <div class="mode-card glass-panel cursor-pointer" data-mode="spelling-bee">
+              <div class="mode-badge recommended">推薦！</div>
+              <div class="mode-icon spelling-icon"><i class="fa-solid fa-keyboard"></i></div>
+              <h3>拼字王挑戰</h3>
+              <p>聽英文發音與首尾字提示，拼出正確英文單字！最適合英文拼字比賽訓練。</p>
+            </div>
+
+            <!-- 模式 2：主題選擇題 -->
+            <div class="mode-card glass-panel cursor-pointer" data-mode="multiple-choice">
+              <div class="mode-icon choice-icon"><i class="fa-solid fa-list-check"></i></div>
+              <h3>單字選擇題</h3>
+              <p>英翻中或中翻英四選一，快問快答！適合快速複習與記憶。</p>
+            </div>
+
+            <!-- 模式 3：翻牌配對 -->
+            <div class="mode-card glass-panel cursor-pointer" data-mode="memory-match">
+              <div class="mode-icon match-icon"><i class="fa-solid fa-clone"></i></div>
+              <h3>記憶卡配對</h3>
+              <p>經典翻牌對對碰，將英文卡牌與中文解釋卡牌完美配對！</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- C. 遊戲面板：拼字王模式 (Spelling Bee Panel) -->
+        <div id="panel-game-spelling" class="game-panel">
+          <div class="spelling-question-card glass-panel">
+            <div class="btn-spelling-speak-row">
+              <button id="btn-spelling-repeat-speak" class="btn-speak-large" title="再次播放發音">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
+              <p>點擊聽發音</p>
+            </div>
+            
+            <div id="spelling-prompt" class="spelling-display-word">
+              <!-- 動態生成例如: b _ _ _ _ _ _ _ l -->
+            </div>
+
+            <div class="spelling-hint-container">
+              <button id="btn-show-spelling-hint" class="btn btn-text btn-sm">
+                <i class="fa-solid fa-circle-question"></i> 顯示中文提示
+              </button>
+              <div id="spelling-chinese-hint" class="spelling-chinese-hint-text hidden">
+                <!-- 中文提示 -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 輸入方格與鍵盤 -->
+          <div class="spelling-input-area">
+            <input type="text" id="spelling-input-field" class="spelling-input-box" placeholder="請在此輸入英文單字" autocomplete="off" autofocus>
+            <div class="input-info">支援實體鍵盤輸入，直接打字並按 Enter 送出！</div>
+          </div>
+
+          <!-- 虛擬鍵盤區 -->
+          <div class="keyboard-wrapper glass-panel">
+            <div class="keyboard-row">
+              <button class="key" data-key="q">Q</button>
+              <button class="key" data-key="w">W</button>
+              <button class="key" data-key="e">E</button>
+              <button class="key" data-key="r">R</button>
+              <button class="key" data-key="t">T</button>
+              <button class="key" data-key="y">Y</button>
+              <button class="key" data-key="u">U</button>
+              <button class="key" data-key="i">I</button>
+              <button class="key" data-key="o">O</button>
+              <button class="key" data-key="p">P</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key" data-key="a">A</button>
+              <button class="key" data-key="s">S</button>
+              <button class="key" data-key="d">D</button>
+              <button class="key" data-key="f">F</button>
+              <button class="key" data-key="g">G</button>
+              <button class="key" data-key="h">H</button>
+              <button class="key" data-key="j">J</button>
+              <button class="key" data-key="k">K</button>
+              <button class="key" data-key="l">L</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key action-key delete-key" data-key="backspace"><i class="fa-solid fa-delete-left"></i> 刪除</button>
+              <button class="key" data-key="z">Z</button>
+              <button class="key" data-key="x">X</button>
+              <button class="key" data-key="c">C</button>
+              <button class="key" data-key="v">V</button>
+              <button class="key" data-key="b">B</button>
+              <button class="key" data-key="n">N</button>
+              <button class="key" data-key="m">M</button>
+              <button class="key action-key submit-key" id="btn-spelling-submit" data-key="enter"><i class="fa-solid fa-paper-plane"></i> 送出</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- D. 遊戲面板：選擇題模式 (Multiple Choice Panel) -->
+        <div id="panel-game-choice" class="game-panel">
+          <div class="choice-question-card glass-panel">
+            <h2 id="choice-question-title">Question?</h2>
+            <div class="pronounce-row">
+              <button id="btn-choice-speak" class="btn-speak"><i class="fa-solid fa-volume-high"></i> 聽發音</button>
+            </div>
+          </div>
+
+          <div id="choice-options-grid" class="choice-grid">
+            <!-- 4 個選項按鈕 -->
+            <button class="choice-btn glass-panel" data-index="0">Option 1</button>
+            <button class="choice-btn glass-panel" data-index="1">Option 2</button>
+            <button class="choice-btn glass-panel" data-index="2">Option 3</button>
+            <button class="choice-btn glass-panel" data-index="3">Option 4</button>
+          </div>
+        </div>
+
+        <!-- E. 遊戲面板：翻牌配對模式 (Memory Match Panel) -->
+        <div id="panel-game-match" class="game-panel">
+          <div class="panel-desc">
+            <h3>翻牌對對碰</h3>
+            <p>請翻開卡牌，將相對應的英文單字與中文翻譯配對成功！</p>
+          </div>
+          <div id="memory-board" class="memory-grid">
+            <!-- 12-16張卡牌 -->
+          </div>
+        </div>
+
+        <!-- F. 結算/成功畫面 (Result Panel) -->
+        <div id="panel-result" class="game-panel">
+          <div class="result-card glass-panel">
+            <div class="result-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <h2>太棒了！關卡挑戰完成！</h2>
+            <p id="result-message">您已成功挑戰該單元，獲得以下獎勵：</p>
+            
+            <div class="reward-row">
+              <div class="reward-item">
+                <span class="reward-val coin-val"><i class="fa-solid fa-coins"></i> +<span id="result-coin-gain">20</span></span>
+                <span class="reward-lbl">金幣</span>
+              </div>
+              <div class="reward-item">
+                <span class="reward-val xp-val"><i class="fa-solid fa-bolt"></i> +<span id="result-xp-gain">50</span></span>
+                <span class="reward-lbl">EXP 經驗值</span>
+              </div>
+            </div>
+
+            <!-- 升級提示區 (預設隱藏) -->
+            <div id="level-up-box" class="level-up-box hidden">
+              <h3>🎉 恭喜升級！</h3>
+              <p>您升到了等級 <span id="level-up-val">2</span>！繼續加油！</p>
+            </div>
+
+            <div class="result-actions">
+              <button id="btn-result-to-menu" class="btn btn-primary btn-full-width">
+                <i class="fa-solid fa-house"></i> 返回單元列表
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 音效元素 (使用 HTML5 Audio，以內建 synthesize 朗讀為主，音效輔助) -->
+  <audio id="snd-correct" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-84.wav" preload="auto"></audio>
+  <audio id="snd-wrong" src="https://assets.mixkit.co/active_storage/sfx/951/951-84.wav" preload="auto"></audio>
+  <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+  <audio id="snd-levelup" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-84.wav" preload="auto"></audio>
+
+  <!-- JavaScript 載入 -->
+  <script src="app.js"></script>
+</body>
+</html>
