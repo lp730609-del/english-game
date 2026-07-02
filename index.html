@@ -109,7 +109,7 @@
     <section id="menu-screen" class="screen">
       <header class="app-header glass-panel">
         <div class="user-meta">
-          <span id="header-avatar" class="user-avatar">🦉</span>
+          <div id="header-avatar" class="user-avatar avatar-wrapper">🦉</div>
           <div>
             <div id="header-username" class="user-name">載入中...</div>
             <div class="user-level">LV <span id="header-level">1</span> <span id="header-xp">0/100</span> XP</div>
@@ -118,6 +118,9 @@
         <div class="header-stats">
           <div class="stat-badge coin-badge">
             <i class="fa-solid fa-coins"></i> <span id="header-coins">0</span>
+          </div>
+          <div id="btn-show-shop" class="stat-badge shop-badge cursor-pointer" title="打開英雄商店與扭蛋">
+            <i class="fa-solid fa-store"></i> 商店 & 扭蛋
           </div>
           <div id="btn-show-wrong-words" class="stat-badge wrong-badge cursor-pointer" title="查看錯題本">
             <i class="fa-solid fa-book-skull"></i> 錯題本 (<span id="header-wrong-count">0</span>)
@@ -400,6 +403,99 @@
   <audio id="snd-wrong" src="https://assets.mixkit.co/active_storage/sfx/951/951-84.wav" preload="auto"></audio>
   <audio id="snd-click" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
   <audio id="snd-levelup" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-84.wav" preload="auto"></audio>
+
+  <!-- 5. 商店與扭蛋 Modal -->
+  <div id="shop-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel modal-large shop-modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-store text-gradient"></i> 英雄商店與寶可夢扭蛋</h3>
+        <button id="btn-close-shop" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <!-- 金幣餘額顯示 -->
+      <div class="shop-balance-row">
+        <span>我的金幣: <strong id="shop-coin-count" class="text-gradient">0</strong> <i class="fa-solid fa-coins" style="color: #ffd700;"></i></span>
+      </div>
+
+      <!-- Tab 切換標籤 -->
+      <div class="shop-tabs">
+        <button class="shop-tab-btn active" data-tab="wardrobe">我的衣櫥</button>
+        <button class="shop-tab-btn" data-tab="shop">金幣商店</button>
+        <button class="shop-tab-btn" data-tab="gacha">寶可夢扭蛋</button>
+      </div>
+
+      <!-- Tab 內容區域 -->
+      <div class="shop-tab-panels">
+        <!-- Panel 1: 我的衣櫥 -->
+        <div class="shop-panel active" id="panel-wardrobe">
+          <div class="wardrobe-container">
+            <div class="avatar-preview-box glass-panel">
+              <h4>目前裝扮預覽</h4>
+              <div id="wardrobe-avatar-preview" class="avatar-wrapper large"></div>
+            </div>
+            <div class="wardrobe-lists">
+              <h5>帽子</h5>
+              <div class="wardrobe-grid" id="wardrobe-hats-grid"></div>
+              <h5>眼鏡</h5>
+              <div class="wardrobe-grid" id="wardrobe-glasses-grid"></div>
+              <h5>背景特效</h5>
+              <div class="wardrobe-grid" id="wardrobe-effects-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2: 金幣商店 -->
+        <div class="shop-panel" id="panel-shop">
+          <div class="shop-filters">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="hat">帽子</button>
+            <button class="filter-btn" data-filter="glasses">眼鏡</button>
+            <button class="filter-btn" data-filter="effect">背景特效</button>
+          </div>
+          <div class="shop-grid" id="shop-items-grid"></div>
+        </div>
+
+        <!-- Panel 3: 寶可夢扭蛋 -->
+        <div class="shop-panel" id="panel-gacha">
+          <div class="gacha-machine-container glass-panel">
+            <div class="gacha-machine">
+              <div class="gacha-glass">
+                <div class="gacha-balls-container">
+                  <span class="gacha-ball rarity-common">🔴</span>
+                  <span class="gacha-ball rarity-rare">🔵</span>
+                  <span class="gacha-ball rarity-legend">🟡</span>
+                  <span class="gacha-ball rarity-common">🔴</span>
+                  <span class="gacha-ball rarity-rare">🔵</span>
+                </div>
+              </div>
+              <button id="btn-draw-gacha" class="btn btn-primary btn-gacha">
+                <i class="fa-solid fa-circle-notch"></i> 啟動扭蛋機 (50 金幣)
+              </button>
+            </div>
+            
+            <!-- 扭蛋結果展示 (預設隱藏) -->
+            <div id="gacha-result-overlay" class="hidden">
+              <div class="gacha-result-card glass-panel">
+                <div class="gacha-egg-animation">🥚</div>
+                <div id="gacha-result-content" class="hidden">
+                  <div class="result-rarity" id="gacha-res-rarity">LEGENDARY</div>
+                  <div class="result-avatar-wrapper" id="gacha-res-avatar-wrapper">⚡</div>
+                  <h4 id="gacha-res-name">皮卡丘</h4>
+                  <p id="gacha-res-desc">電擊老鼠</p>
+                  <button id="btn-gacha-res-ok" class="btn btn-primary">太棒了！</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="pet-collection-section">
+            <h5>我的寶可夢收集冊</h5>
+            <div class="pet-grid" id="pet-collection-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- JavaScript 載入 -->
   <script src="app.js"></script>

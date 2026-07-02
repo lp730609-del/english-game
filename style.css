@@ -1525,10 +1525,694 @@ body {
   .flashcard {
     padding: 25px;
   }
-  .card-word-area h2 {
-    font-size: 2.2rem;
-  }
-  .card-translation-area h3 {
-    font-size: 1.4rem;
+    .card-translation-area h3 {
+      font-size: 1.4rem;
+    }
   }
 }
+
+/* ==========================================
+   英雄商店與寶可夢扭蛋系統 (Shop & Gacha)
+   ========================================== */
+
+.shop-badge {
+  background: rgba(255, 107, 107, 0.12) !important;
+  border: 1px solid rgba(255, 107, 107, 0.3) !important;
+  color: #ff6b6b !important;
+  transition: all 0.2s ease;
+}
+
+.shop-badge:hover {
+  background: #ff6b6b !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* 頭像多層疊加 (Avatar Wrapper) */
+.avatar-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3rem; /* 基礎頭像大小 */
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05);
+  margin-right: 12px;
+  vertical-align: middle;
+}
+
+.avatar-wrapper.large {
+  font-size: 5rem;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  margin: 0 auto;
+}
+
+/* 疊加圖層定位 */
+.equipped-hat {
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6em;
+  z-index: 5;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.equipped-glasses {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.45em;
+  z-index: 6;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+}
+
+.equipped-effect {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  font-size: 0.9em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.equipped-pet {
+  position: absolute;
+  bottom: -5px;
+  right: -15px;
+  font-size: 0.45em;
+  z-index: 7;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));
+  animation: floatPet 2.5s infinite ease-in-out;
+}
+
+/* 商店模態框調整 */
+.shop-modal-content {
+  max-width: 800px !important;
+  width: 90% !important;
+}
+
+.shop-balance-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 15px;
+}
+
+/* Tab 標籤切換 */
+.shop-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 1px;
+}
+
+.shop-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.shop-tab-btn:hover {
+  color: #fff;
+}
+
+.shop-tab-btn.active {
+  color: var(--primary-light);
+}
+
+.shop-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--primary-light);
+  border-radius: 3px 3px 0 0;
+  animation: fadeIn 0.2s ease;
+}
+
+.shop-tab-panels {
+  min-height: 380px;
+}
+
+.shop-panel {
+  display: none;
+}
+
+.shop-panel.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* 衣櫥 Panel */
+.wardrobe-container {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 20px;
+}
+
+.avatar-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  min-height: 250px;
+}
+
+.avatar-preview-box h4 {
+  margin-bottom: 15px;
+  color: var(--text-secondary);
+}
+
+.wardrobe-lists h5 {
+  font-size: 1rem;
+  color: var(--primary-light);
+  margin: 15px 0 8px 0;
+  border-left: 3px solid var(--primary);
+  padding-left: 8px;
+}
+
+.wardrobe-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.wardrobe-item {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.wardrobe-item:hover {
+  background: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+}
+
+.wardrobe-item.equipped {
+  background: rgba(100, 92, 255, 0.2);
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+  font-weight: 700;
+}
+
+/* 商店商品 Panel */
+.shop-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.filter-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background: var(--primary-light);
+  color: #fff;
+  border-color: var(--primary-light);
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 15px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.shop-item-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 15px 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.shop-item-card:hover {
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+.shop-item-emoji {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+}
+
+.shop-item-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.shop-item-btn {
+  width: 100%;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.shop-item-btn.buy {
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+
+.shop-item-btn.buy:hover {
+  background: #ffd700;
+  color: #1a1a2e;
+}
+
+.shop-item-btn.owned {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* 寶可夢扭蛋 Panel */
+.gacha-machine-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 15px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  min-height: 200px;
+}
+
+.gacha-machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.gacha-glass {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 70%);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.gacha-balls-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  gap: 6px;
+  position: absolute;
+  top: 5px;
+}
+
+.gacha-ball {
+  font-size: 1.4rem;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+
+.btn-gacha {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important;
+  color: #1a1a2e !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4) !important;
+}
+
+.btn-gacha:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 6px 20px rgba(255, 140, 0, 0.6) !important;
+}
+
+/* 扭蛋機旋轉動畫 */
+.gacha-shake {
+  animation: shakeGacha 0.8s ease-in-out infinite;
+}
+
+.gacha-shake-balls {
+  animation: shakeBalls 0.8s ease-in-out infinite;
+}
+
+/* 扭蛋孵化動畫層 */
+#gacha-result-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 25, 0.95);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+}
+
+.gacha-result-card {
+  padding: 30px;
+  text-align: center;
+  max-width: 320px;
+  width: 85%;
+  animation: scaleBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.gacha-egg-animation {
+  font-size: 4.5rem;
+  animation: wiggleEgg 1.2s infinite ease-in-out;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.gacha-egg-hatch {
+  animation: eggHatch 0.5s forwards ease-out;
+}
+
+.result-rarity {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.result-rarity.common {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+}
+
+.result-rarity.rare {
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+}
+
+.result-rarity.legendary {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.result-avatar-wrapper {
+  font-size: 4.5rem;
+  margin: 15px auto;
+  filter: drop-shadow(0 5px 15px rgba(255,255,255,0.2));
+  animation: scaleBounce 0.5s ease-out;
+}
+
+#gacha-res-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+#gacha-res-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* 寶可夢收集冊 */
+.pet-collection-section h5 {
+  font-size: 1rem;
+  color: var(--primary-light);
+  margin: 20px 0 10px 0;
+  border-left: 3px solid var(--primary);
+  padding-left: 8px;
+}
+
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.pet-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 10px 5px;
+  text-align: center;
+  opacity: 0.4; /* 未擁有置灰 */
+  filter: grayscale(100%);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.pet-card.owned {
+  opacity: 1;
+  filter: none;
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+  cursor: pointer;
+}
+
+.pet-card.owned:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.12);
+}
+
+.pet-card.equipped {
+  border-color: var(--primary-light);
+  background: rgba(100, 92, 255, 0.15);
+  box-shadow: inset 0 0 10px rgba(100, 92, 255, 0.2);
+}
+
+.pet-card.equipped::after {
+  content: '跟隨中';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 0.55rem;
+  background: var(--primary-light);
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.pet-emoji {
+  font-size: 2rem;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.pet-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pet-card.owned .pet-name {
+  color: #fff;
+}
+
+/* ==========================================
+   背景特效動畫 (Avatar Effects Keyframes)
+   ========================================== */
+
+/* 彩虹特效背景 */
+.effect-rainbow {
+  background: radial-gradient(circle, rgba(255,255,255,0) 40%, rgba(255,0,0,0.1) 50%, rgba(0,255,0,0.1) 60%, rgba(0,0,255,0.1) 70%);
+  border-radius: 50%;
+  animation: rotateRainbow 6s linear infinite;
+}
+
+@keyframes rotateRainbow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 火焰特效背景 */
+.effect-fire {
+  animation: pulseFire 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseFire {
+  0% {
+    filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.5)) drop-shadow(0 0 6px rgba(255, 140, 0, 0.3));
+    transform: scale(0.98);
+  }
+  100% {
+    filter: drop-shadow(0 0 6px rgba(255, 69, 0, 0.9)) drop-shadow(0 0 15px rgba(255, 140, 0, 0.6));
+    transform: scale(1.05);
+  }
+}
+
+/* 星光特效 */
+.effect-stars {
+  animation: sparkleStars 2s ease-in-out infinite;
+}
+
+@keyframes sparkleStars {
+  0%, 100% { opacity: 0.3; transform: scale(0.9) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(15deg); }
+}
+
+/* 閃電特效 */
+.effect-lightning {
+  animation: skewLightning 0.4s infinite alternate;
+}
+
+@keyframes skewLightning {
+  0% { filter: drop-shadow(0 0 2px #fffb00); transform: skewX(0deg); }
+  100% { filter: drop-shadow(0 0 8px #ffd700); transform: skewX(5deg) scale(1.02); }
+}
+
+/* 雪花特效 */
+.effect-snow {
+  animation: floatSnow 3s infinite ease-in-out alternate;
+}
+
+@keyframes floatSnow {
+  0% { transform: translateY(-3px) rotate(0deg); }
+  100% { transform: translateY(3px) rotate(10deg); }
+}
+
+/* 鬼火特效 */
+.effect-ghost {
+  animation: floatGhost 2s infinite ease-in-out;
+}
+
+@keyframes floatGhost {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+  50% { transform: translateY(-5px) scale(1.05); opacity: 1; }
+}
+
+/* 泡泡特效 */
+.effect-bubble {
+  animation: floatBubble 2.5s infinite ease-in-out;
+}
+
+@keyframes floatBubble {
+  0% { transform: scale(0.9) translateY(2px); opacity: 0.6; }
+  50% { transform: scale(1.05) translateY(-2px); opacity: 0.9; }
+  100% { transform: scale(0.9) translateY(2px); opacity: 0.6; }
+}
+
+/* ==========================================
+   其他輔助動畫 (Helper Keyframes)
+   ========================================== */
+
+/* 寵物漂浮 */
+@keyframes floatPet {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* 扭蛋機抖動 */
+@keyframes shakeGacha {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-3px, 2px) rotate(-1deg); }
+  30% { transform: translate(3px, -2px) rotate(1deg); }
+  50% { transform: translate(-2px, -3px) rotate(-1deg); }
+  70% { transform: translate(2px, 2px) rotate(1deg); }
+  90% { transform: translate(-1px, -1px) rotate(0deg); }
+}
+
+@keyframes shakeBalls {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-5px) translateX(-2px); }
+  75% { transform: translateY(-6px) translateX(2px); }
+}
+
+/* 扭蛋蛋晃動 */
+@keyframes wiggleEgg {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-8deg) scale(1.03); }
+  30% { transform: rotate(6deg) scale(1.03); }
+  45% { transform: rotate(-5deg) scale(1.03); }
+  60% { transform: rotate(3deg) scale(1.01); }
+}
+
+/* 蛋孵化爆炸 */
+@keyframes eggHatch {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); filter: brightness(2) blur(1px); }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* 響應式優化 */
+@media (max-width: 600px) {
+  .wardrobe-container {
+    grid-template-columns: 1fr;
+  }
+  .avatar-preview-box {
+    min-height: 150px;
+    padding: 10px;
+  }
+  .shop-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+

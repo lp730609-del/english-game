@@ -2,6 +2,81 @@
    Spelling Hero - Application Logic
    ========================================== */
 
+// --- 商店與寶可夢扭蛋常數 ---
+const SHOP_ITEMS = [
+  // 帽子
+  { id: "hat-crown", type: "hat", name: "皇家皇冠", emoji: "👑", price: 500 },
+  { id: "hat-gentleman", type: "hat", name: "紳士高帽", emoji: "🎩", price: 250 },
+  { id: "hat-grad", type: "hat", name: "學士帽", emoji: "🎓", price: 200 },
+  { id: "hat-santa", type: "hat", name: "聖誕紅帽", emoji: "🎅", price: 180 },
+  { id: "hat-helmet", type: "hat", name: "探險鋼盔", emoji: "🪖", price: 350 },
+  { id: "hat-detective", type: "hat", name: "偵探帽", emoji: "🕵️", price: 220 },
+  { id: "hat-party", type: "hat", name: "派對尖帽", emoji: "🥳", price: 100 },
+
+  // 眼鏡
+  { id: "glass-cool", type: "glasses", name: "超跑墨鏡", emoji: "😎", price: 150 },
+  { id: "glass-nerd", type: "glasses", name: "學霸眼鏡", emoji: "🤓", price: 100 },
+  { id: "glass-pirate", type: "glasses", name: "海盜眼罩", emoji: "🏴‍☠️", price: 250 },
+  { id: "glass-diving", type: "glasses", name: "科幻潛水鏡", emoji: "🥽", price: 180 },
+  { id: "glass-robot", type: "glasses", name: "電子機械眼", emoji: "🤖", price: 300 },
+  { id: "glass-love", type: "glasses", name: "愛心造型眼", emoji: "😍", price: 120 },
+
+  // 特效
+  { id: "effect-rainbow", type: "effect", name: "彩虹霓虹", emoji: "🌈", price: 400, className: "effect-rainbow" },
+  { id: "effect-fire", type: "effect", name: "烈焰包圍", emoji: "🔥", price: 300, className: "effect-fire" },
+  { id: "effect-stars", type: "effect", name: "閃耀星光", emoji: "✨", price: 200, className: "effect-stars" },
+  { id: "effect-lightning", type: "effect", name: "狂暴閃電", emoji: "⚡", price: 350, className: "effect-lightning" },
+  { id: "effect-snow", type: "effect", name: "冰天雪地", emoji: "❄️", price: 250, className: "effect-snow" },
+  { id: "effect-ghost", type: "effect", name: "幽靈鬼火", emoji: "👻", price: 280, className: "effect-ghost" },
+  { id: "effect-bubble", type: "effect", name: "泡泡光環", emoji: "🫧", price: 150, className: "effect-bubble" }
+];
+
+const GACHA_PETS = [
+  // 普通 (60%)
+  { id: "pet-pikachu", rarity: "common", name: "皮卡丘", emoji: "⚡", desc: "電擊鼠鼠" },
+  { id: "pet-bulbasaur", rarity: "common", name: "妙蛙種子", emoji: "🐸", desc: "背著種子的蛙蛙" },
+  { id: "pet-charmander", rarity: "common", name: "小火龍", emoji: "🔥", desc: "尾巴冒火的小蜥蜴" },
+  { id: "pet-squirtle", rarity: "common", name: "傑尼龜", emoji: "🐢", desc: "噴水的小烏龜" },
+  { id: "pet-jigglypuff", rarity: "common", name: "胖丁", emoji: "🎈", desc: "唱歌會讓人睡著的粉紅氣球" },
+
+  // 稀有 (30%)
+  { id: "pet-eevee", rarity: "rare", name: "伊布", emoji: "🦊", desc: "超人氣的多進化狐狸" },
+  { id: "pet-snorlax", rarity: "rare", name: "卡比獸", emoji: "💤", desc: "只想睡覺和吃東西的大熊" },
+  { id: "pet-gengar", rarity: "rare", name: "耿鬼", emoji: "😈", desc: "愛惡作劇的紫色影子幽靈" },
+  { id: "pet-psyduck", rarity: "rare", name: "可達鴨", emoji: "🦆", desc: "抱著頭痛、會念力的鴨鴨" },
+  { id: "pet-togepi", rarity: "rare", name: "波克比", emoji: "🥚", desc: "蛋殼形狀的幸運寵物" },
+
+  // 傳奇 (10%)
+  { id: "pet-charizard", rarity: "legendary", name: "噴火龍", emoji: "🐉", desc: "飛龍外觀的超強火系主力" },
+  { id: "pet-mewtwo", rarity: "legendary", name: "超夢", emoji: "🔮", desc: "超強念力的神獸" },
+  { id: "pet-rayquaza", rarity: "legendary", name: "烈空坐", emoji: "🟢", desc: "掌控天空的綠色巨龍" }
+];
+
+// 多層頭像疊加渲染函數
+function renderAvatarHTML(avatarName, equippedObj, isLarge = false) {
+  const avatarEmoji = getAvatarEmoji(avatarName);
+  const hat = equippedObj && equippedObj.hat ? SHOP_ITEMS.find(item => item.id === equippedObj.hat) : null;
+  const glasses = equippedObj && equippedObj.glasses ? SHOP_ITEMS.find(item => item.id === equippedObj.glasses) : null;
+  const effect = equippedObj && equippedObj.effect ? SHOP_ITEMS.find(item => item.id === equippedObj.effect) : null;
+  const pet = equippedObj && equippedObj.pet ? GACHA_PETS.find(item => item.id === equippedObj.pet) : null;
+
+  let hatHtml = hat ? `<span class="equipped-hat">${hat.emoji}</span>` : '';
+  let glassesHtml = glasses ? `<span class="equipped-glasses">${glasses.emoji}</span>` : '';
+  let effectHtml = effect ? `<span class="equipped-effect ${effect.className}">${effect.emoji}</span>` : '';
+  let petHtml = pet ? `<span class="equipped-pet">${pet.emoji}</span>` : '';
+
+  const largeClass = isLarge ? 'large' : '';
+  return `
+    <div class="avatar-wrapper ${largeClass}">
+      ${effectHtml}
+      <span class="base-avatar-emoji">${avatarEmoji}</span>
+      ${hatHtml}
+      ${glassesHtml}
+      ${petHtml}
+    </div>
+  `;
+}
+
 // --- 狀態管理 ---
 let allWords = [];       // 全部的單字資料
 let units = [];          // 劃分好的單元清單
@@ -344,10 +419,10 @@ function loadProfilesToUI() {
     const completedCount = p.completedUnits ? p.completedUnits.length : 0;
     const progressPct = totalUnits > 0 ? Math.round((completedCount / totalUnits) * 100) : 0;
     
-    const avatarEmoji = getAvatarEmoji(p.avatar);
+    const avatarHtml = renderAvatarHTML(p.avatar, p.equipped);
     
     card.innerHTML = `
-      <span class="profile-avatar">${avatarEmoji}</span>
+      <div class="profile-avatar-container" style="margin-bottom: 12px; margin-right: 0; display: inline-block;">${avatarHtml}</div>
       <div class="profile-name">${name}</div>
       <div class="profile-progress">進度 ${progressPct}%</div>
     `;
@@ -375,6 +450,11 @@ function getAvatarEmoji(avatarName) {
 function loginAsUser(name) {
   const profiles = getProfilesFromStorage();
   currentUser = profiles[name];
+  
+  // 防禦性初始化商店與扭蛋資料
+  if (!currentUser.inventory) currentUser.inventory = [];
+  if (!currentUser.equipped) currentUser.equipped = { hat: null, glasses: null, effect: null, pet: null };
+  
   playSound('snd-click');
   showScreen('menu-screen');
   startLearningTimer();
@@ -438,7 +518,7 @@ function processWordsData(words) {
 function updateHeaderUI() {
   if (!currentUser) return;
   document.getElementById('header-username').innerText = currentUser.name;
-  document.getElementById('header-avatar').innerText = getAvatarEmoji(currentUser.avatar);
+  document.getElementById('header-avatar').innerHTML = renderAvatarHTML(currentUser.avatar, currentUser.equipped);
   document.getElementById('header-level').innerText = currentUser.level || 1;
   document.getElementById('header-coins').innerText = currentUser.coins || 0;
   
@@ -1374,7 +1454,9 @@ document.getElementById('btn-create-profile').addEventListener('click', () => {
     xp: 0,
     completedUnits: [],
     wrongWords: [],
-    dailyStats: {}
+    dailyStats: {},
+    inventory: [],
+    equipped: { hat: null, glasses: null, effect: null, pet: null }
   };
   
   saveProfilesToStorage(profiles);
@@ -1387,7 +1469,334 @@ document.getElementById('btn-create-profile').addEventListener('click', () => {
 });
 
 // ==========================================
-// 輔助工具 (Utility Functions)
+// 英雄商店與寶可夢扭蛋系統邏輯
+// ==========================================
+
+// 打開商店
+document.getElementById('btn-show-shop').addEventListener('click', () => {
+  playSound('snd-click');
+  document.getElementById('shop-modal').classList.remove('hidden');
+  
+  // 預設選中衣櫥頁籤
+  switchShopTab('wardrobe');
+  updateShopUI();
+});
+
+// 關閉商店
+document.getElementById('btn-close-shop').addEventListener('click', () => {
+  playSound('snd-click');
+  document.getElementById('shop-modal').classList.add('hidden');
+  updateHeaderUI();
+});
+
+// Tab 切換事件綁定
+document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    playSound('snd-click');
+    const tabName = e.target.getAttribute('data-tab');
+    switchShopTab(tabName);
+  });
+});
+
+function switchShopTab(tabName) {
+  // 切換按鈕狀態
+  document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+    if (btn.getAttribute('data-tab') === tabName) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // 切換面板顯示
+  document.querySelectorAll('.shop-panel').forEach(panel => {
+    if (panel.id === `panel-${tabName}`) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+
+  updateShopUI();
+}
+
+function updateShopUI() {
+  if (!currentUser) return;
+
+  // 更新金幣餘額
+  document.getElementById('shop-coin-count').innerText = currentUser.coins || 0;
+
+  // 1. 渲染我的衣櫥
+  renderWardrobe();
+
+  // 2. 渲染金幣商店
+  renderShopItems();
+
+  // 3. 渲染扭蛋機寵物收集冊
+  renderPetCollection();
+}
+
+// --- 我的衣櫥渲染與控制 ---
+function renderWardrobe() {
+  // 頭像預覽
+  document.getElementById('wardrobe-avatar-preview').innerHTML = renderAvatarHTML(currentUser.avatar, currentUser.equipped, true);
+
+  // 篩選出已擁有的帽子、眼鏡、特效
+  const ownedHats = SHOP_ITEMS.filter(item => item.type === 'hat' && currentUser.inventory.includes(item.id));
+  const ownedGlasses = SHOP_ITEMS.filter(item => item.type === 'glasses' && currentUser.inventory.includes(item.id));
+  const ownedEffects = SHOP_ITEMS.filter(item => item.type === 'effect' && currentUser.inventory.includes(item.id));
+
+  renderWardrobeGrid('hats', ownedHats, 'hat');
+  renderWardrobeGrid('glasses', ownedGlasses, 'glasses');
+  renderWardrobeGrid('effects', ownedEffects, 'effect');
+}
+
+function renderWardrobeGrid(typeKey, items, typeName) {
+  const grid = document.getElementById(`wardrobe-${typeKey}-grid`);
+  grid.innerHTML = '';
+
+  if (items.length === 0) {
+    grid.innerHTML = `<p class="no-data-msg" style="font-size:0.8rem; margin:0; padding:5px 0;">尚無已解鎖項目，快去商店逛逛吧！</p>`;
+    return;
+  }
+
+  items.forEach(item => {
+    const isEquipped = currentUser.equipped && currentUser.equipped[typeName] === item.id;
+    const btn = document.createElement('div');
+    btn.className = `wardrobe-item ${isEquipped ? 'equipped' : ''}`;
+    btn.innerHTML = `${item.emoji} ${item.name} ${isEquipped ? '<span>✓</span>' : ''}`;
+    
+    btn.addEventListener('click', () => {
+      playSound('snd-click');
+      if (isEquipped) {
+        currentUser.equipped[typeName] = null; // 卸下
+      } else {
+        currentUser.equipped[typeName] = item.id; // 穿戴
+      }
+      
+      // 儲存進度並重新渲染
+      const profiles = getProfilesFromStorage();
+      profiles[currentUser.name] = currentUser;
+      saveProfilesToStorage(profiles);
+      
+      renderWardrobe();
+    });
+    
+    grid.appendChild(btn);
+  });
+}
+
+// --- 金幣商店渲染與控制 ---
+let currentShopFilter = 'all';
+
+// 商品過濾按鈕綁定
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    playSound('snd-click');
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    currentShopFilter = e.target.getAttribute('data-filter');
+    renderShopItems();
+  });
+});
+
+function renderShopItems() {
+  const grid = document.getElementById('shop-items-grid');
+  grid.innerHTML = '';
+
+  const filteredItems = currentShopFilter === 'all' 
+    ? SHOP_ITEMS 
+    : SHOP_ITEMS.filter(item => item.type === currentShopFilter);
+
+  filteredItems.forEach(item => {
+    const isOwned = currentUser.inventory && currentUser.inventory.includes(item.id);
+    const card = document.createElement('div');
+    card.className = 'shop-item-card glass-panel';
+    
+    card.innerHTML = `
+      <div class="shop-item-emoji">${item.emoji}</div>
+      <div class="shop-item-name">${item.name}</div>
+      <button class="shop-item-btn ${isOwned ? 'owned' : 'buy'}" ${isOwned ? 'disabled' : ''}>
+        ${isOwned ? '已解鎖' : `<i class="fa-solid fa-coins"></i> ${item.price}`}
+      </button>
+    `;
+
+    if (!isOwned) {
+      card.querySelector('.buy').addEventListener('click', () => {
+        if (currentUser.coins >= item.price) {
+          playSound('snd-levelup'); // 播放購買成功音效
+          currentUser.coins -= item.price;
+          if (!currentUser.inventory) currentUser.inventory = [];
+          currentUser.inventory.push(item.id);
+          
+          // 存檔與更新
+          const profiles = getProfilesFromStorage();
+          profiles[currentUser.name] = currentUser;
+          saveProfilesToStorage(profiles);
+          
+          // 粒子爆發特效
+          const rect = card.getBoundingClientRect();
+          spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 25);
+          
+          updateShopUI();
+        } else {
+          playSound('snd-wrong');
+          alert('金幣不夠喔！快去挑戰關卡賺金幣吧！');
+        }
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+// --- 寶可夢扭蛋與寵物收集冊 ---
+document.getElementById('btn-draw-gacha').addEventListener('click', () => {
+  if (currentUser.coins < 50) {
+    playSound('snd-wrong');
+    alert('金幣不足！抽一次扭蛋需要 50 金幣。');
+    return;
+  }
+
+  // 1. 扣除金幣並更新
+  currentUser.coins -= 50;
+  document.getElementById('shop-coin-count').innerText = currentUser.coins;
+  
+  const gachaMachine = document.querySelector('.gacha-machine');
+  const gachaBalls = document.querySelector('.gacha-balls-container');
+  
+  // 2. 播放機器震動與搖晃動畫
+  gachaMachine.classList.add('gacha-shake');
+  gachaBalls.classList.add('gacha-shake-balls');
+  playSound('snd-click');
+  
+  // 阻擋重複點擊
+  document.getElementById('btn-draw-gacha').disabled = true;
+
+  setTimeout(() => {
+    // 3. 停止搖晃動畫
+    gachaMachine.classList.remove('gacha-shake');
+    gachaBalls.classList.remove('gacha-shake-balls');
+    
+    // 4. 抽取寵物
+    const rand = Math.random() * 100;
+    let selectedRarity = 'common';
+    if (rand >= 90) {
+      selectedRarity = 'legendary';
+    } else if (rand >= 60) {
+      selectedRarity = 'rare';
+    }
+    
+    const candidates = GACHA_PETS.filter(p => p.rarity === selectedRarity);
+    const pet = candidates[Math.floor(Math.random() * candidates.length)];
+    
+    // 5. 判定是否重複
+    let isDuplicate = false;
+    if (!currentUser.inventory) currentUser.inventory = [];
+    
+    if (currentUser.inventory.includes(pet.id)) {
+      isDuplicate = true;
+      currentUser.coins += 15; // 補償金幣
+    } else {
+      currentUser.inventory.push(pet.id);
+    }
+    
+    // 存檔
+    const profiles = getProfilesFromStorage();
+    profiles[currentUser.name] = currentUser;
+    saveProfilesToStorage(profiles);
+    
+    // 6. 顯示彩蛋孵化遮罩
+    const overlay = document.getElementById('gacha-result-overlay');
+    const egg = overlay.querySelector('.gacha-egg-animation');
+    const content = document.getElementById('gacha-result-content');
+    
+    overlay.classList.remove('hidden');
+    egg.classList.remove('hidden');
+    egg.classList.remove('gacha-egg-hatch');
+    content.classList.add('hidden');
+    
+    // 7. 綁定敲擊蛋殼孵化事件 (一鍵點擊孵化)
+    const hatchAction = () => {
+      egg.classList.add('gacha-egg-hatch');
+      playSound('snd-levelup');
+      
+      // 粒子爆發
+      const rect = egg.getBoundingClientRect();
+      spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 35);
+      
+      setTimeout(() => {
+        egg.classList.add('hidden');
+        
+        // 設定渲染結果
+        const rarityEl = document.getElementById('gacha-res-rarity');
+        rarityEl.className = `result-rarity ${pet.rarity}`;
+        rarityEl.innerText = pet.rarity.toUpperCase();
+        
+        document.getElementById('gacha-res-avatar-wrapper').innerText = pet.emoji;
+        document.getElementById('gacha-res-name').innerText = pet.name;
+        document.getElementById('gacha-res-desc').innerText = isDuplicate 
+          ? `[重複抽中] 補償返還 15 金幣！\n(${pet.desc})`
+          : pet.desc;
+          
+        content.classList.remove('hidden');
+      }, 400);
+      
+      egg.removeEventListener('click', hatchAction);
+    };
+    
+    egg.addEventListener('click', hatchAction);
+    
+  }, 1200); // 搖晃 1.2 秒後出結果
+});
+
+// 關閉扭蛋結果
+document.getElementById('btn-gacha-res-ok').addEventListener('click', () => {
+  playSound('snd-click');
+  document.getElementById('gacha-result-overlay').classList.add('hidden');
+  document.getElementById('btn-draw-gacha').disabled = false;
+  updateShopUI();
+});
+
+// 渲染寵物收集冊
+function renderPetCollection() {
+  const grid = document.getElementById('pet-collection-grid');
+  grid.innerHTML = '';
+
+  GACHA_PETS.forEach(pet => {
+    const isOwned = currentUser.inventory && currentUser.inventory.includes(pet.id);
+    const isEquipped = currentUser.equipped && currentUser.equipped.pet === pet.id;
+    
+    const card = document.createElement('div');
+    card.className = `pet-card ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
+    card.innerHTML = `
+      <span class="pet-emoji">${pet.emoji}</span>
+      <span class="pet-name">${pet.name}</span>
+    `;
+
+    if (isOwned) {
+      card.addEventListener('click', () => {
+        playSound('snd-click');
+        if (isEquipped) {
+          currentUser.equipped.pet = null; // 取消跟隨
+        } else {
+          currentUser.equipped.pet = pet.id; // 跟隨
+        }
+        
+        const profiles = getProfilesFromStorage();
+        profiles[currentUser.name] = currentUser;
+        saveProfilesToStorage(profiles);
+        
+        updateShopUI();
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+// ==========================================
+// 輔支工具 (Utility Functions)
 // ==========================================
 
 // Fisher-Yates 洗牌演算法
